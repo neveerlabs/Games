@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <title>Tic‑Tac‑Toe · Deep Q‑Learning</title>
+  <link rel="icon" type="image/png" href="https://img.icons8.com/?size=64&id=7Z7BISZ1HcP1&format=png&color=000000">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="app-wrapper">
+    <div class="game-container">
+      <div class="game-main">
+        <div class="score-header">
+          <div class="score-card">
+            <img src="https://img.icons8.com/ios-glyphs/90/ffffff/user--v1.png" alt="Player" width="28" height="28">
+            <div class="score-info">
+              <span class="score-label">Player</span>
+              <span class="score-value" id="playerScore">0</span>
+            </div>
+          </div>
+          <div class="score-card">
+            <img src="https://img.icons8.com/ios-glyphs/90/ffffff/brain.png" alt="AI" width="28" height="28">
+            <div class="score-info">
+              <span class="score-label">Computer</span>
+              <span class="score-value" id="aiScore">0</span>
+            </div>
+          </div>
+          <div class="action-group">
+            <button class="icon-btn" id="resetScoreBtn" title="Reset Scores">⟳</button>
+            <button class="icon-btn" id="homeBtn" title="Restart">⌂</button>
+          </div>
+        </div>
+        <div class="board" id="board"></div>
+        <div class="status-bar">
+          <div class="turn-text">TURN: <strong id="turnLabel">PLAYER (X)</strong></div>
+          <div class="epsilon-text">ε = <span id="epsilonValue">0.10</span></div>
+        </div>
+      </div>
+      <div class="control-sidebar">
+        <div class="panel">
+          <h3>QUANTUM TRAINING</h3>
+          <div class="train-buttons">
+            <button class="train-btn" id="train1k">+1,000</button>
+            <button class="train-btn" id="train5k">+5,000</button>
+            <button class="train-btn" id="train50k">+50k</button>
+            <button class="train-btn stop-btn" id="stopTrainBtn" style="display: none;">STOP</button>
+          </div>
+          <div class="progress-wrapper" id="trainProgress" style="display: none;">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <div class="stats-row">
+            <span>Q‑STATES</span>
+            <span id="qStateCount">0</span>
+          </div>
+          <div class="stats-row">
+            <span>ENGINE REV</span>
+            <span>v4.4.3.6</span>
+          </div>
+          <div class="data-actions">
+            <button class="sec-btn" id="exportQBtn">EXPORT Q</button>
+            <button class="sec-btn" id="importQBtn">IMPORT Q</button>
+            <button class="sec-btn" id="clearMemoryBtn">RESET MEMORY</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>HYPERPARAMETERS</h3>
+          <div class="param">
+            <label>EXPLORE RATE (ε) <span id="epsVal">0.10</span></label>
+            <input type="range" id="epsilonSlider" min="0" max="0.5" step="0.01" value="0.10">
+          </div>
+          <div class="param">
+            <label>LEARNING RATE (α) <span id="lrVal">0.15</span></label>
+            <input type="range" id="lrSlider" min="0.01" max="0.5" step="0.01" value="0.15">
+          </div>
+          <div class="param">
+            <label>DISCOUNT (γ) <span id="gammaVal">0.94</span></label>
+            <input type="range" id="gammaSlider" min="0.5" max="0.99" step="0.01" value="0.94">
+          </div>
+          <label class="checkbox">
+            <input type="checkbox" id="decayEpsCheck" checked> DECAY ε DURING TRAINING
+          </label>
+        </div>
+        <div class="panel">
+          <h3>STRATEGY PROMPT</h3>
+          <p class="info-text">AI embedded with tactical prompt: WIN → BLOCK → FORK → Q‑LEARNING. If losing path → FORCE
+            DRAW. Never repeats past mistakes via Q‑Table & IndexedDB.</p>
+          <div class="social-row">
+            <a href="https://wa.me/628561765372" target="_blank"><img
+                src="https://img.icons8.com/ios-glyphs/90/ffffff/whatsapp.png" width="22" alt="wa"></a>
+            <a href="https://instagram.com/neveerlabs" target="_blank"><img
+                src="https://img.icons8.com/ios-glyphs/90/ffffff/instagram-new.png" width="22" alt="ig"></a>
+            <a href="https://github.com/neveerlabs" target="_blank"><img
+                src="https://img.icons8.com/ios-glyphs/90/ffffff/github.png" width="22" alt="gh"></a>
+            <a href="https://t.me/Neverlabs" target="_blank"><img
+                src="https://img.icons8.com/ios-glyphs/90/ffffff/telegram-app.png" width="22" alt="tg"></a>
+          </div>
+          <div class="legal-links">
+            <a href="#" id="licenseLink">MIT License</a> · <a href="#" id="privacyLink">Privacy Policy</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="resultModal" class="modal">
+    <div class="modal-card">
+      <div id="crownArea"></div>
+      <h1 id="resultTitle">VICTORY</h1>
+      <p id="resultMsg"></p>
+      <div class="modal-actions">
+        <button class="sec-btn" id="rematchBtn">REMATCH</button>
+        <button class="sec-btn" id="homeModalBtn">MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="licenseModal" class="modal">
+    <div class="modal-card" style="text-align: left;">
+      <h2>MIT LICENSE</h2>
+      <p>Copyright 2026 Neverlabs<br><br>
+
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:<br><br>
+
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.<br><br>
+
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.</p>
+      <button class="sec-btn" id="closeLicenseBtn" style="margin-top: 20px;">Close</button>
+    </div>
+  </div>
+
+  <div id="privacyModal" class="modal">
+    <div class="modal-card" style="text-align: left; max-height: 85vh; overflow-y: auto;">
+      <h2>PRIVACY POLICY</h2>
+      <div style="margin-top: 16px;">
+        <h3>Privacy Policy for Tic-Tac-Toe AI</h3>
+        <p><strong>Last Updated:</strong> April 8, 2026</p>
+
+        <h3>1. Introduction</h3>
+        <p>Neverlabs ("we", "our", "us") is committed to protecting your privacy. This Privacy Policy explains how we
+          handle your information when you use our Tic-Tac-Toe AI application.</p>
+
+        <h3>2. Information We Collect</h3>
+        <p>Our application operates entirely in your browser and does NOT collect, transmit, or store any personal
+          information on external servers.</p>
+
+        <h3>3. Local Storage (IndexedDB)</h3>
+        <p>The application uses browser <strong>IndexedDB</strong> to save:</p>
+        <ul>
+          <li><strong>Game Scores:</strong> Your win/loss statistics</li>
+          <li><strong>Q-Learning Table:</strong> AI training data (all past game experiences)</li>
+          <li><strong>Game Parameters:</strong> Your epsilon, learning rate, and discount factor settings</li>
+        </ul>
+        <p>This data remains on YOUR device only and is never transmitted to our servers or any third party. Unlike
+          localStorage, IndexedDB can handle large datasets efficiently, allowing the AI to store extensive game
+          history.</p>
+
+        <h3>4. Third-Party Services</h3>
+        <p>We use the following third-party services:</p>
+        <ul>
+          <li><strong>Icons8:</strong> For UI icons (loaded from their CDN)</li>
+          <li><strong>GitHub Pages:</strong> For hosting (if applicable)</li>
+        </ul>
+        <p>These services may collect standard web analytics data (such as IP address and browser type). Please refer to
+          their privacy policies for more information.</p>
+
+        <h3>5. Cookies</h3>
+        <p>We do NOT use cookies. All data is stored in browser IndexedDB.</p>
+
+        <h3>6. Data Security</h3>
+        <p>Since all data is stored locally on your device, you have full control over it. You can clear your data at
+          any time by:</p>
+        <ul>
+          <li>Clicking the "RESET MEMORY" button in the app (clears Q‑table)</li>
+          <li>Using browser developer tools to clear IndexedDB</li>
+          <li>Clearing your browser cache/storage</li>
+        </ul>
+
+        <h3>7. Children's Privacy</h3>
+        <p>Our application does not collect any personal information from anyone, including children under 13. It is
+          safe for all ages.</p>
+
+        <h3>8. Your Rights</h3>
+        <p>You have the right to:</p>
+        <ul>
+          <li>Access your data (via browser developer tools → IndexedDB)</li>
+          <li>Delete your data (via "RESET MEMORY" button or browser settings)</li>
+          <li>Export your data (via "EXPORT Q" button, which downloads the Q‑table as JSON)</li>
+        </ul>
+
+        <h3>9. Changes to This Policy</h3>
+        <p>We may update this Privacy Policy from time to time. Changes will be posted on this page with an updated
+          "Last Updated" date. Your continued use of the application constitutes acceptance of any changes.</p>
+
+        <h3>10. Contact Us</h3>
+        <p>If you have questions about this Privacy Policy, contact us at:</p>
+        <ul>
+          <li><strong>Email:</strong> <a href="mailto:userlinuxorg@gmail.com">userlinuxorg@gmail.com</a></li>
+          <li><strong>WhatsApp:</strong> <a href="https://wa.me/628561765372" target="_blank">+62 856-1765-372</a></li>
+          <li><strong>Instagram:</strong> <a href="https://instagram.com/neveerlabs" target="_blank">@neveerlabs</a>
+          </li>
+          <li><strong>Facebook:</strong> <a href="https://www.facebook.com/neveerlabs" target="_blank">Neverlabs</a>
+          </li>
+          <li><strong>Telegram:</strong> <a href="https://t.me/Neverlabs" target="_blank">@Neverlabs</a></li>
+          <li><strong>GitHub:</strong> <a href="https://github.com/neveerlabs" target="_blank">@neveerlabs</a></li>
+        </ul>
+      </div>
+      <button class="sec-btn" id="closePrivacyBtn" style="margin-top: 24px;">Close</button>
+    </div>
+  </div>
+
+  <canvas id="particleCanvas"></canvas>
+  <script src="script.js"></script>
+</body>
+
+</html>
